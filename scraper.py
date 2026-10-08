@@ -45,3 +45,39 @@ if __name__ == "__main__":
         quotes = parse_quotes(html)
         for q in quotes:
             print(q)
+
+
+def get_next_page(html):
+    soup = BeautifulSoup(html, "html.parser")
+    next_btn = soup.find("li", class_="next")
+    if next_btn:
+        next_link = next_btn.find("a")["href"]
+        return BASE_URL + next_link
+    return None
+
+
+def crawl(start_url, max_pages=3):
+    current_url = start_url
+    all_quotes = []
+    pages_visited = 0
+
+    while current_url and pages_visited < max_pages:
+        print(f"\nVisiting page {pages_visited + 1}: {current_url}")
+        html = fetch_page(current_url)
+
+        if not html:
+            break
+
+        quotes = parse_quotes(html)
+        all_quotes.extend(quotes)
+        current_url = get_next_page(html)
+        pages_visited += 1
+        time.sleep(1)
+
+    return all_quotes
+
+
+if __name__ == "__main__":
+    data = crawl(BASE_URL, max_pages=3)
+    print(f"\nTotal quotes collected: {len(data)}")
+    print(data)
